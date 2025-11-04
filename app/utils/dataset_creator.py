@@ -35,10 +35,11 @@ class DatasetCreator():
         print('Dataset created...')
         return datasets
 
-    def make_pairs(self, datasets):
+    def make_pairs(self, datasets, samples_per_pairs=600):
         print('Creating paired datasets...')
         
-        pairs = []
+        positive_pairs = []
+        negative_pairs = []
         
         # Creating positive pairs (between equal classes)
         for _, ds in datasets.items():
@@ -47,7 +48,7 @@ class DatasetCreator():
                 ds.shuffle(100, reshuffle_each_iteration=True),
                 tf.data.Dataset.from_tensor_slices(tf.ones(len(ds)))
             ))
-            pairs.append(ds_positive)
+            positive_pairs.append(ds_positive)
         print('Positive pairs created...')
 
         # Creating negative pairs (between differents classes)
@@ -61,8 +62,24 @@ class DatasetCreator():
                     ds2,
                     tf.data.Dataset.from_tensor_slices(tf.zeros(len(ds1)))
                 ))
-                pairs.append(ds_negative)
+                negative_pairs.append(ds_negative)
         print('Negative pairs created...')
-        
-        # Concatenated datasets
-        return reduce(lambda x, y: x.concatenate(y), pairs)
+
+        # Creating negative and positive dataset
+        pos_pairs_dataset = reduce(lambda x, y: x.concatenate(y), positive_pairs)
+        neg_pairs_dataset = reduce(lambda x, y: x.concatenate(y), negative_pairs)
+
+        # Taking only `samples_per_pairs` from each dataset
+        pos_samples = pos_pairs_dataset.take(samples_per_pairs)
+        neg_samples = neg_pairs_dataset.take(samples_per_pairs)
+
+        # Mix everything and shuffle.
+        all_samples = pos_samples.concatenate(neg_samples)
+        all_samples = all_samples.shuffle(buffer_size=1024, reshuffle_each_iteration=True)
+
+        print(f"✅ Pares positivos: {pos_samples}")
+        print(f"❌ Pares negativos: {neg_samples}")
+        print(f"📊 Total: {pos_samples + neg_samples}")
+        print(f"⚖️ Proporção Pos/Neg: {pos_samples / neg_samples:.2f}")
+
+        return all_samples

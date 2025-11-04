@@ -8,7 +8,7 @@ import tensorflow as tf
 from functools import reduce
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
-from app.services.layer_distance import L1Distance
+from layer_distance import L1Distance
 
 l1_distance = L1Distance()
 

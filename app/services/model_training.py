@@ -3,7 +3,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import keyboard
 
 from app.utils.dataset_creator import DatasetCreator
 from app.utils.image_processor import ImageProcessor
@@ -63,29 +62,15 @@ opt = tf.keras.optimizers.Adam(1e-3)
 checkpoint_dir = os.path.join('checkpoints')
 checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 
-positive_count = 0
-negative_count = 0
-
-for _, _, label in data.as_numpy_iterator():
-    if label == 1:
-        positive_count += 1
-    else:
-        negative_count += 1
-
-print(f"✅ Pares positivos: {positive_count}")
-print(f"❌ Pares negativos: {negative_count}")
-print(f"📊 Total: {positive_count + negative_count}")
-print(f"⚖️ Proporção Pos/Neg: {positive_count / negative_count:.2f}")
-
-# trainer.train(
-#     train_data,
-#     50,
-#     checkpoint,
-#     checkpoint_dir,
-#     siamese_model,
-#     binary_cross_loss,
-#     opt
-# )
+trainer.train(
+    train_data,
+    50,
+    checkpoint,
+    checkpoint_dir,
+    siamese_model,
+    binary_cross_loss,
+    opt
+)
 
 # Restaurar último checkpoint
 # latest = tf.train.latest_checkpoint(checkpoint_dir)
@@ -114,9 +99,3 @@ print(f"⚖️ Proporção Pos/Neg: {positive_count / negative_count:.2f}")
 
 #     plt.tight_layout()
 #     plt.show()
-    
-#     if keyboard.is_pressed('n'):
-#         plt.close()
-    
-#     if keyboard.is_pressed('q'):
-#         break
