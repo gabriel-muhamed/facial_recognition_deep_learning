@@ -59,43 +59,44 @@ test_data = test_data.batch(16).prefetch(8)
 binary_cross_loss = tf.losses.BinaryCrossentropy()
 opt = tf.keras.optimizers.Adam(1e-3)
 
-checkpoint_dir = os.path.join('checkpoints')
+checkpoint_dir = os.path.join('checkpoints', 'ckpt')
 checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 
-trainer.train(
-    train_data,
-    50,
-    checkpoint,
-    checkpoint_dir,
-    siamese_model,
-    binary_cross_loss,
-    opt
-)
+# trainer.train(
+#     train_data,
+#     50,
+#     checkpoint,
+#     checkpoint_dir,
+#     siamese_model,
+#     binary_cross_loss,
+#     opt
+# )
 
-# Restaurar último checkpoint
-# latest = tf.train.latest_checkpoint(checkpoint_dir)
-# if latest:
-#     checkpoint.restore(latest).expect_partial()
-#     print(f"✅ Checkpoint restaurado: {latest}")
-# else:
-#     print("⚠️ Nenhum checkpoint encontrado.")
+# Restore last checkpoint
+get_checkpoint_dir = os.path.join('checkpoints')
+latest = tf.train.latest_checkpoint(get_checkpoint_dir)
+if latest:
+    checkpoint.restore(latest).expect_partial()
+    print(f"✅ Checkpoint restaurado: {latest}")
+else:
+    print("⚠️ Nenhum checkpoint encontrado.")
 
-# test_input, test_val, y_true = next(test_data.as_numpy_iterator())
+test_input, test_val, y_true = next(test_data.as_numpy_iterator())
 
-# pred = siamese_model.predict([test_input, test_val])
+pred = siamese_model.predict([test_input, test_val])
 
-# for i in range(len(test_input)):
-#     plt.figure(figsize=(8, 4))
+for i in range(len(test_input)):
+    plt.figure(figsize=(8, 4))
 
-#     plt.subplot(1, 2, 1)
-#     plt.imshow(test_input[i])
-#     plt.title("Imagem 1")
-#     plt.axis("off")
+    plt.subplot(1, 2, 1)
+    plt.imshow(test_input[i])
+    plt.title("Imagem 1")
+    plt.axis("off")
 
-#     plt.subplot(1, 2, 2)
-#     plt.imshow(test_val[i])
-#     plt.title(f"Imagem 2\nLabel: {y_true[i]}\nPred: {pred[i]}")
-#     plt.axis("off")
+    plt.subplot(1, 2, 2)
+    plt.imshow(test_val[i])
+    plt.title(f"Imagem 2\nLabel: {y_true[i]}\nPred: {pred[i]}")
+    plt.axis("off")
 
-#     plt.tight_layout()
-#     plt.show()
+    plt.tight_layout()
+    plt.show()

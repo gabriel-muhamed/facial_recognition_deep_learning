@@ -77,9 +77,9 @@ class DatasetCreator():
         all_samples = pos_samples.concatenate(neg_samples)
         all_samples = all_samples.shuffle(buffer_size=1024, reshuffle_each_iteration=True)
 
-        print(f"✅ Pares positivos: {pos_samples}")
-        print(f"❌ Pares negativos: {neg_samples}")
-        print(f"📊 Total: {pos_samples + neg_samples}")
-        print(f"⚖️ Proporção Pos/Neg: {pos_samples / neg_samples:.2f}")
+        print(f"✅ Pares positivos: {len(pos_samples)}")
+        print(f"❌ Pares negativos: {len(neg_samples)}")
+        print(f"📊 Total: {len(all_samples)}")
+        print(f"⚖️ Proporção Pos/Neg: {len(pos_samples) / len(neg_samples):.2f}")
 
         return all_samples

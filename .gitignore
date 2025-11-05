@@ -5,3 +5,6 @@ data/positive/*
 data/negative/*
 data/diff_anchor/*
 training_checkpoints/*
+
+__pycache__/*
+*.pyc
