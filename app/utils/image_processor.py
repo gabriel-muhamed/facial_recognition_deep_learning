@@ -15,7 +15,6 @@ class ImageProcessor:
         byte_img = tf.io.read_file(file_path)
         img = tf.io.decode_jpeg(byte_img, channels=3)
         img = tf.image.resize(img, (105,105))
-        img = self._data_augmentation(img)
         img = img / 255.0
         return img
 
