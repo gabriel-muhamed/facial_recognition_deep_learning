@@ -33,7 +33,6 @@ JACKIE_PATH = os.path.join('data', 'jackie_chan')
 SAIMON_PATH = os.path.join('data', 'saimon')
 
 class_paths = {
-    "rock": ROCK_PATH,
     "bale": BALE_PATH,
     "dustin": DUSTIN_PATH,
     "gary": GARY_PATH,
@@ -62,40 +61,48 @@ opt = tf.keras.optimizers.Adam(1e-4)
 checkpoint_dir = os.path.join('checkpoints', 'ckpt')
 checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 
-trainer.train(
-    train_data,
-    50,
-    checkpoint,
-    checkpoint_dir,
-    siamese_model,
-    binary_cross_loss,
-    opt
-)
+# trainer.train(
+#     train_data,
+#     50,
+#     checkpoint,
+#     checkpoint_dir,
+#     siamese_model,
+#     binary_cross_loss,
+#     opt
+# )
 
 # Restore last checkpoint
-# get_checkpoint_dir = os.path.join('checkpoints')
-# latest = tf.train.latest_checkpoint(get_checkpoint_dir)
-# if latest:
-#     checkpoint.restore(latest).expect_partial()
-#     print(f"✅ Checkpoint restaurado: {latest}")
-# else:
-#     print("⚠️ Nenhum checkpoint encontrado.")
+get_checkpoint_dir = os.path.join('checkpoints')
+latest = tf.train.latest_checkpoint(get_checkpoint_dir)
+if latest:
+    checkpoint.restore(latest).expect_partial()
+    print(f"✅ Checkpoint restaurado: {latest}")
+else:
+    print("⚠️ Nenhum checkpoint encontrado.")
 
 # test_input, test_val, y_true = next(test_data.as_numpy_iterator())
 
-# pred = siamese_model.predict([test_input, test_val])
+# img1_path = os.path.join('data', 'testes', 'mm1.jpg')
+# img2_path = os.path.join('data', 'saimon', 'saimon.jpeg')
 
-# for i in range(len(test_input)):
+# img1, img2 = imgp.preprocess(img1_path), imgp.preprocess(img2_path)
+
+# img1 = tf.expand_dims(img1, axis=0)  # shape: (1, 105,105,3)
+# img2 = tf.expand_dims(img2, axis=0)  # shape: (1, 105,105,3)
+
+# pred = siamese_model.predict([img1, img2])
+
+# for i in range(1):
 #     plt.figure(figsize=(8, 4))
 
 #     plt.subplot(1, 2, 1)
-#     plt.imshow(test_input[i])
+#     plt.imshow(tf.keras.utils.array_to_img(img1[0]))
 #     plt.title("Imagem 1")
 #     plt.axis("off")
 
 #     plt.subplot(1, 2, 2)
-#     plt.imshow(test_val[i])
-#     plt.title(f"Imagem 2\nLabel: {y_true[i]}\nPred: {pred[i]}")
+#     plt.imshow(tf.keras.utils.array_to_img(img2[0]))
+#     plt.title(f"Imagem 2\nLabel: {0}\nPred: {1 if pred[i] > 0.5 else 0}")
 #     plt.axis("off")
 
 #     plt.tight_layout()
