@@ -39,11 +39,11 @@ class_paths = {
     "heath": HEATH_PATH,
     "hugh": HUGH_PATH,
     "jackie": JACKIE_PATH,
-    "saimom": SAIMON_PATH
+    "saimon": SAIMON_PATH
 }
 
 datasets = dtc.create_dataset_from_classes(class_paths, 80)
-data = dtc.make_pairs(datasets)
+data = dtc.make_pairs(datasets, 550)
 
 data = data.map(imgp.preprocess_twin, num_parallel_calls=tf.data.AUTOTUNE)
 data = data.cache()
@@ -58,12 +58,12 @@ test_data = test_data.batch(16).prefetch(8)
 binary_cross_loss = tf.losses.BinaryCrossentropy()
 opt = tf.keras.optimizers.Adam(1e-4)
 
-checkpoint_dir = os.path.join('checkpoints', 'ckpt')
+checkpoint_dir = os.path.join('checkpoints-v2', 'ckpt')
 checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 
 # trainer.train(
 #     train_data,
-#     50,
+#     100,
 #     checkpoint,
 #     checkpoint_dir,
 #     siamese_model,
@@ -72,7 +72,7 @@ checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 # )
 
 # Restore last checkpoint
-get_checkpoint_dir = os.path.join('checkpoints')
+get_checkpoint_dir = os.path.join('checkpoints-v2')
 latest = tf.train.latest_checkpoint(get_checkpoint_dir)
 if latest:
     checkpoint.restore(latest).expect_partial()
@@ -80,17 +80,19 @@ if latest:
 else:
     print("⚠️ Nenhum checkpoint encontrado.")
 
-# test_input, test_val, y_true = next(test_data.as_numpy_iterator())
+test_input, test_val, y_true = next(test_data.as_numpy_iterator())
 
-# img1_path = os.path.join('data', 'testes', 'mm1.jpg')
-# img2_path = os.path.join('data', 'saimon', 'saimon.jpeg')
+# img1_path = os.path.join('data', 'jackie_chan', 'jackie_chan_1.jpeg')
+# img2_path = os.path.join('data', 'saimon', 'saimon_1.jpg')
 
 # img1, img2 = imgp.preprocess(img1_path), imgp.preprocess(img2_path)
 
 # img1 = tf.expand_dims(img1, axis=0)  # shape: (1, 105,105,3)
 # img2 = tf.expand_dims(img2, axis=0)  # shape: (1, 105,105,3)
 
-# pred = siamese_model.predict([img1, img2])
+pred = siamese_model.predict([test_input, test_val])
+
+# print(pred)
 
 # for i in range(1):
 #     plt.figure(figsize=(8, 4))
