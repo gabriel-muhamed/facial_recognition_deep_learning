@@ -82,7 +82,8 @@ class Trainer:
                   f"loss={self._metric_loss.result():.4f}, "
                   f"acc={self._metric_acc.result():.4f}, "
                   f"prec={self._metric_prec.result():.4f}, "
-                  f"rec={self._metric_rec.result():.4f}")
+                  f"rec={self._metric_rec.result():.4f}, "
+                  f"val_loss={val_loss}")
 
             # Early Stropping
             if val_loss < self.best_val_loss:

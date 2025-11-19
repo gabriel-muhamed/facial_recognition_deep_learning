@@ -22,28 +22,16 @@ imgp = ImageProcessor()
 trainer = Trainer()
 siamese_model = SiameseModel(embedding, l1_distance).__call__()
 
-
-ROCK_PATH = os.path.join('data', 'chris_rock')
-BALE_PATH = os.path.join('data', 'christian_bale')
-DUSTIN_PATH = os.path.join('data', 'dustin_hoffman')
-GARY_PATH = os.path.join('data', 'gary_oldman')
-HEATH_PATH = os.path.join('data', 'heath_ledger')
-HUGH_PATH = os.path.join('data', 'hugh_jackman')
-JACKIE_PATH = os.path.join('data', 'jackie_chan')
-SAIMON_PATH = os.path.join('data', 'saimon')
+data_dir = 'data'
 
 class_paths = {
-    "bale": BALE_PATH,
-    "dustin": DUSTIN_PATH,
-    "gary": GARY_PATH,
-    "heath": HEATH_PATH,
-    "hugh": HUGH_PATH,
-    "jackie": JACKIE_PATH,
-    "saimon": SAIMON_PATH
+    class_name: os.path.join(data_dir, class_name)
+    for class_name in os.listdir(data_dir)
+    if os.path.isdir(os.path.join(data_dir, class_name))
 }
 
-datasets = dtc.create_dataset_from_classes(class_paths, 80)
-data = dtc.make_pairs(datasets, 530)
+datasets = dtc.create_dataset_from_classes(class_paths, 60)
+data = dtc.make_pairs(datasets, 5800)
 
 data = data.map(imgp.preprocess_twin, num_parallel_calls=tf.data.AUTOTUNE)
 data = data.cache()
@@ -73,39 +61,38 @@ checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 # )
 
 # Restore last checkpoint
-get_checkpoint_dir = os.path.join('checkpoints-v3')
-latest = tf.train.latest_checkpoint(get_checkpoint_dir)
-if latest:
-    checkpoint.restore(latest).expect_partial()
-    print(f"✅ Checkpoint restaurado: {latest}")
-else:
-    print("⚠️ Nenhum checkpoint encontrado.")
+# get_checkpoint_dir = os.path.join('checkpoints-v3')
+# latest = tf.train.latest_checkpoint(get_checkpoint_dir)
+# if latest:
+#     checkpoint.restore(latest).expect_partial()
+#     print(f"✅ Checkpoint restaurado: {latest}")
+# else:
+#     print("⚠️ Nenhum checkpoint encontrado.")
 
-test_input, test_val, y_true = next(test_data.as_numpy_iterator())
+# test_input, test_val, y_true = next(test_data.as_numpy_iterator())
 
-# img1_path = os.path.join('data', 'jackie_chan', 'jackie_chan_1.jpeg')
-# img2_path = os.path.join('data', 'saimon', 'saimon_1.jpg')
+# img1_path = os.path.join('data', 'test', 'm1.jpg')
+# img2_path = os.path.join('data', 'test', 'n1.jpg')
 
 # img1, img2 = imgp.preprocess(img1_path), imgp.preprocess(img2_path)
 
 # img1 = tf.expand_dims(img1, axis=0)  # shape: (1, 105,105,3)
 # img2 = tf.expand_dims(img2, axis=0)  # shape: (1, 105,105,3)
 
-pred = siamese_model.predict([test_input, test_val])
+# pred = siamese_model.predict([img1, img2])
 
-for i in range(len(test_input)):
-    print(f'y_hat: {1 if pred[i] > 0.5 else 0}; y: {y_true[i]}')
-    # plt.figure(figsize=(8, 4))
+# for i in range(1):
+#     plt.figure(figsize=(8, 4))
 
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(tf.keras.utils.array_to_img(img1[0]))
-    # plt.title("Imagem 1")
-    # plt.axis("off")
+#     plt.subplot(1, 2, 1)
+#     plt.imshow(tf.keras.utils.array_to_img(img1[0]))
+#     plt.title("Imagem 1")
+#     plt.axis("off")
 
-    # plt.subplot(1, 2, 2)
-    # plt.imshow(tf.keras.utils.array_to_img(img2[0]))
-    # plt.title(f"Imagem 2\nLabel: {0}\nPred: {1 if pred[i] > 0.5 else 0}")
-    # plt.axis("off")
+#     plt.subplot(1, 2, 2)
+#     plt.imshow(tf.keras.utils.array_to_img(img2[0]))
+#     plt.title(f"Imagem 2\nLabel: {0}\nPred: {pred}")
+#     plt.axis("off")
 
-    # plt.tight_layout()
-    # plt.show()
+#     plt.tight_layout()
+#     plt.show()
