@@ -43,7 +43,7 @@ class_paths = {
 }
 
 datasets = dtc.create_dataset_from_classes(class_paths, 80)
-data = dtc.make_pairs(datasets, 550)
+data = dtc.make_pairs(datasets, 530)
 
 data = data.map(imgp.preprocess_twin, num_parallel_calls=tf.data.AUTOTUNE)
 data = data.cache()
@@ -58,12 +58,13 @@ test_data = test_data.batch(16).prefetch(8)
 binary_cross_loss = tf.losses.BinaryCrossentropy()
 opt = tf.keras.optimizers.Adam(1e-4)
 
-checkpoint_dir = os.path.join('checkpoints-v2', 'ckpt')
+checkpoint_dir = os.path.join('checkpoints-v3', 'ckpt')
 checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 
 # trainer.train(
 #     train_data,
-#     100,
+#     test_data,
+#     50,
 #     checkpoint,
 #     checkpoint_dir,
 #     siamese_model,
@@ -72,7 +73,7 @@ checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 # )
 
 # Restore last checkpoint
-get_checkpoint_dir = os.path.join('checkpoints-v2')
+get_checkpoint_dir = os.path.join('checkpoints-v3')
 latest = tf.train.latest_checkpoint(get_checkpoint_dir)
 if latest:
     checkpoint.restore(latest).expect_partial()
@@ -92,20 +93,19 @@ test_input, test_val, y_true = next(test_data.as_numpy_iterator())
 
 pred = siamese_model.predict([test_input, test_val])
 
-# print(pred)
+for i in range(len(test_input)):
+    print(f'y_hat: {1 if pred[i] > 0.5 else 0}; y: {y_true[i]}')
+    # plt.figure(figsize=(8, 4))
 
-# for i in range(1):
-#     plt.figure(figsize=(8, 4))
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(tf.keras.utils.array_to_img(img1[0]))
+    # plt.title("Imagem 1")
+    # plt.axis("off")
 
-#     plt.subplot(1, 2, 1)
-#     plt.imshow(tf.keras.utils.array_to_img(img1[0]))
-#     plt.title("Imagem 1")
-#     plt.axis("off")
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(tf.keras.utils.array_to_img(img2[0]))
+    # plt.title(f"Imagem 2\nLabel: {0}\nPred: {1 if pred[i] > 0.5 else 0}")
+    # plt.axis("off")
 
-#     plt.subplot(1, 2, 2)
-#     plt.imshow(tf.keras.utils.array_to_img(img2[0]))
-#     plt.title(f"Imagem 2\nLabel: {0}\nPred: {1 if pred[i] > 0.5 else 0}")
-#     plt.axis("off")
-
-#     plt.tight_layout()
-#     plt.show()
+    # plt.tight_layout()
+    # plt.show()
