@@ -51,7 +51,7 @@ class Trainer:
 
     def train(self, train_data, val_data, epochs, checkpoint, checkpoint_dir, model, loss_func, opt):
         now_sp = datetime.now(self._sp_tz)
-        print(f'Starting network training. Schedule: {now_sp.time()}')
+        print(f'🕔 Starting network training. Schedule: {now_sp.time()}')
         
         for epoch in range(1, epochs+1):
             print('\n Epoch {}/{}'.format(epoch, epochs))
@@ -105,4 +105,4 @@ class Trainer:
                 checkpoint.save(file_prefix=checkpoint_dir)
 
         now_sp = datetime.now(self._sp_tz)
-        print(f'Finishing network training. Schedule: {now_sp.time()}')
+        print(f'🕔 Finishing network training. Schedule: {now_sp.time()}')
