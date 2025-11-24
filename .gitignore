@@ -1,10 +1,11 @@
 venv/
 
-data/anchor/*
-data/positive/*
-data/negative/*
-data/diff_anchor/*
-training_checkpoints/*
+data/anchor/
+data/positive/
+data/negative/
+data/diff_anchor/
+training_checkpoints/
+checkpoints/
 
-__pycache__/*
+__pycache__/
 *.pyc
