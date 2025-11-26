@@ -49,7 +49,7 @@ class DatasetCreator():
                 tf.data.Dataset.from_tensor_slices(tf.ones(len(ds)))
             ))
             positive_pairs.append(ds_positive)
-        print('✅ Positive pairs created...')
+        print('🟢 Positive pairs created...')
 
         # Creating negative pairs (between differents classes)
         class_names = list(datasets.keys())
@@ -63,14 +63,14 @@ class DatasetCreator():
                     tf.data.Dataset.from_tensor_slices(tf.zeros(len(ds1)))
                 ))
                 negative_pairs.append(ds_negative)
-        print('✅ Negative pairs created...')
+        print('🔴 Negative pairs created...')
 
         # Creating negative and positive dataset
         pos_pairs_dataset = reduce(lambda x, y: x.concatenate(y), positive_pairs)
         neg_pairs_dataset = reduce(lambda x, y: x.concatenate(y), negative_pairs)
 
-        print(f'✅ Number of pairs in the positive dataset {len(pos_pairs_dataset)}')
-        print(f'❌ Number of pairs in the negative dataset {len(neg_pairs_dataset)}')
+        print(f'🟢 Number of pairs in the positive dataset {len(pos_pairs_dataset)}')
+        print(f'🔴 Number of pairs in the negative dataset {len(neg_pairs_dataset)}')
 
         # Taking only `samples_per_pairs` from each dataset
         pos_samples = pos_pairs_dataset.take(samples_per_pairs)
@@ -80,8 +80,8 @@ class DatasetCreator():
         all_samples = pos_samples.concatenate(neg_samples)
         all_samples = all_samples.shuffle(buffer_size=1024, reshuffle_each_iteration=True)
 
-        print(f"✅ Positive pairs: {len(pos_samples)}")
-        print(f"❌ Negative pairs: {len(neg_samples)}")
+        print(f"🟢 Positive pairs: {len(pos_samples)}")
+        print(f"🔴 Negative pairs: {len(neg_samples)}")
         print(f"📊 Total: {len(all_samples)}")
         print(f"⚖️ Positive/Negative Ratio: {len(pos_samples) / len(neg_samples):.2f}")
 
