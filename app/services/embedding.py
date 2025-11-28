@@ -16,7 +16,7 @@ class Embedding:
         
         _c4 = Conv2D(256, (4,4), activation='relu')(_m3)
         _f1 = Flatten()(_c4)
-        _d1 = Dense(4096, activation='sigmoid')(_f1)
+        _d1 = Dense(512, activation='relu')(_f1)
         
         self.model = Model(inputs=_inp, outputs=_d1, name='embedding')
     

@@ -16,11 +16,6 @@ class Trainer:
         self._metric_acc = tf.keras.metrics.BinaryAccuracy(name='Accuracy')
         self._metric_prec = tf.keras.metrics.Precision(name='precision')
         self._metric_rec = tf.keras.metrics.Recall(name='recall')
-
-        self.best_val_loss = float("inf")
-        self.patience = patience
-        self.wait = 0
-        self.best_weights = None
     
     @tf.function
     def _train_step(self, batch, model, loss_func, opt):
@@ -39,14 +34,6 @@ class Trainer:
         self._metric_prec.update_state(true_label, predict_label)
         self._metric_rec.update_state(true_label, predict_label)
         
-        return loss
-    
-    def _val_step(self, batch, model, loss_func):
-        images = batch[:2]
-        true_label = batch[2]
-
-        predict_label = model(images, training=False)
-        loss = loss_func(true_label, predict_label)
         return loss
 
     def train(self, train_data, val_data, epochs, checkpoint, checkpoint_dir, model, loss_func, opt):
@@ -71,12 +58,8 @@ class Trainer:
                     ('prec', self._metric_prec.result().numpy()),
                     ('rec', self._metric_rec.result().numpy())
                 ])
-            
-            # Validation loop
-            val_loss = 0.0
-            for batch in val_data:
-                val_loss += self._val_step(batch, model, loss_func)
-            val_loss /= len(val_data)
+
+
 
             print(f" -> Epoch {epoch} metrics: "
                   f"loss={self._metric_loss.result():.4f}, "
@@ -85,21 +68,22 @@ class Trainer:
                   f"rec={self._metric_rec.result():.4f}, "
                   f"val_loss={val_loss}")
 
-            # Early Stropping
-            if val_loss < self.best_val_loss:
-                print("Val loss upgrade! Saving best model")
-                self.best_val_loss = val_loss
-                self.best_weights = model.get_weights()
-                self.wait = 0
-            else:
-                self.wait += 1
-                print(f"No upgrade ({self.wait}/{self.patience})")
+            if epoch >= 5:
+                # Early Stropping
+                if val_loss < self.best_val_loss - 1e-4:
+                    print("Val loss upgrade! Saving best model")
+                    self.best_val_loss = val_loss
+                    self.best_weights = model.get_weights()
+                    self.wait = 0
+                else:
+                    self.wait += 1
+                    print(f"No upgrade ({self.wait}/{self.patience})")
 
-                if self.wait >= self.patience:
-                    print("Early Stopping activated! Restoring best weights")
-                    model.set_weights(self.best_weights)
-                    checkpoint.save(file_prefix=checkpoint_dir + "/best")
-                    break
+                    if self.wait >= self.patience:
+                        print("Early Stopping activated! Restoring best weights")
+                        model.set_weights(self.best_weights)
+                        checkpoint.save(file_prefix=checkpoint_dir + "/best")
+                        break
 
             if epoch % 10 == 0:
                 checkpoint.save(file_prefix=checkpoint_dir)

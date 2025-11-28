@@ -23,7 +23,7 @@ embedding = Embedding()
 l1_distance = L1Distance()
 dtc = DatasetCreator()
 imgp = ImageProcessor()
-trainer = Trainer(patience=10)
+trainer = Trainer(patience=25)
 siamese_model = SiameseModel(embedding, l1_distance).__call__()
 
 ## Creating the class dataset ##
@@ -51,12 +51,11 @@ opt = tf.keras.optimizers.Adam(1e-4)
 checkpoint_dir = os.path.join('checkpoints', 'ckpt')
 checkpoint = tf.train.Checkpoint(opt=opt, siamese_model=siamese_model)
 
-
 ## Training ##
 trainer.train(
     train_data,
     test_data,
-    50,
+    200,
     checkpoint,
     checkpoint_dir,
     siamese_model,
