@@ -7,9 +7,11 @@ import pytz
 from keras.utils import Progbar
 from datetime import datetime
 
+from app.services.early_stopping import EarlyStoppingCallback
+
 
 class Trainer:
-    def __init__(self, patience=5):
+    def __init__(self):
         self._sp_tz = pytz.timezone('America/Sao_Paulo')
         
         self._metric_loss = tf.keras.metrics.Mean(name='loss')
@@ -19,26 +21,33 @@ class Trainer:
     
     @tf.function
     def _train_step(self, batch, model, loss_func, opt):
-        images = batch[:2]
-        true_label = batch[2] 
-        
+        if len(batch) == 2:
+            (img1, img2), y_true = batch
+        else:
+            img1, img2, y_true = batch        
         with tf.GradientTape() as tape:
-            predict_label = model(images, training=True)
-            loss = loss_func(true_label, predict_label)
+            predict_label = model([img1, img2], training=True)
+            loss = loss_func(y_true, predict_label)
 
         grad = tape.gradient(loss, model.trainable_variables)
         opt.apply_gradients(zip(grad, model.trainable_variables))
         
         self._metric_loss.update_state(loss)
-        self._metric_acc.update_state(true_label, predict_label)
-        self._metric_prec.update_state(true_label, predict_label)
-        self._metric_rec.update_state(true_label, predict_label)
+        self._metric_acc.update_state(y_true, predict_label)
+        self._metric_prec.update_state(y_true, predict_label)
+        self._metric_rec.update_state(y_true, predict_label)
         
         return loss
 
     def train(self, train_data, val_data, epochs, checkpoint, checkpoint_dir, model, loss_func, opt):
         now_sp = datetime.now(self._sp_tz)
         print(f'🕔 Starting network training. Schedule: {now_sp.time()}')
+        
+        early_stopping = EarlyStoppingCallback(
+            patience=50,
+            min_delta=0.0005,
+            restore_best_weights=True
+        )
         
         for epoch in range(1, epochs+1):
             print('\n Epoch {}/{}'.format(epoch, epochs))
@@ -59,31 +68,25 @@ class Trainer:
                     ('rec', self._metric_rec.result().numpy())
                 ])
 
-
-
             print(f" -> Epoch {epoch} metrics: "
                   f"loss={self._metric_loss.result():.4f}, "
                   f"acc={self._metric_acc.result():.4f}, "
                   f"prec={self._metric_prec.result():.4f}, "
-                  f"rec={self._metric_rec.result():.4f}, "
-                  f"val_loss={val_loss}")
+                  f"rec={self._metric_rec.result():.4f}, ")
 
-            if epoch >= 5:
-                # Early Stropping
-                if val_loss < self.best_val_loss - 1e-4:
-                    print("Val loss upgrade! Saving best model")
-                    self.best_val_loss = val_loss
-                    self.best_weights = model.get_weights()
-                    self.wait = 0
-                else:
-                    self.wait += 1
-                    print(f"No upgrade ({self.wait}/{self.patience})")
-
-                    if self.wait >= self.patience:
-                        print("Early Stopping activated! Restoring best weights")
-                        model.set_weights(self.best_weights)
-                        checkpoint.save(file_prefix=checkpoint_dir + "/best")
-                        break
+            stopped = early_stopping(
+                epoch=epoch,
+                model=model,
+                val_data=val_data,
+                loss_func=loss_func,
+                checkpoint=checkpoint,
+                checkpoint_dir=checkpoint_dir
+            )
+            if stopped:
+                    print("Training interrupted by Early Stopping.")
+                    now_sp = datetime.now(self._sp_tz)
+                    print(f'🕔 Finishing network training. Schedule: {now_sp.time()}')
+                    break
 
             if epoch % 10 == 0:
                 checkpoint.save(file_prefix=checkpoint_dir)

@@ -23,7 +23,7 @@ embedding = Embedding()
 l1_distance = L1Distance()
 dtc = DatasetCreator()
 imgp = ImageProcessor()
-trainer = Trainer(patience=25)
+trainer = Trainer()
 siamese_model = SiameseModel(embedding, l1_distance).__call__()
 
 ## Creating the class dataset ##
